@@ -33,6 +33,6 @@ func (ta *TestActor) Receive(context actor.Context) {
 	}
 }
 
-func NewTestActorProps(msgQueue chan RealMessage) actor.Props {
+func NewTestActorProps(msgQueue chan RealMessage) *actor.Props {
 	return actor.FromInstance(&TestActor{msgQueue, NoAutoPilot})
 }

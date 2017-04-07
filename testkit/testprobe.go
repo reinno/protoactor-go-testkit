@@ -22,27 +22,32 @@ type (
 	}
 )
 
-func newTestProbe(t *testing.T, testActorFunc func(chan RealMessage) *actor.PID) TestProbe {
+func newTestProbe(t *testing.T, testActorFunc func(chan RealMessage) (*actor.PID, error)) (TestProbe, error) {
 	msgQueue := make(chan RealMessage, MaxMsgQueueNum)
 
-	return &TestBase{
-		t:              t,
-		testActor:      testActorFunc(msgQueue),
-		msgQueue:       msgQueue,
-		defaultTimeout: DefaultTimeout,
+	pid, err := testActorFunc(msgQueue)
+	if err != nil {
+		return nil, err
 	}
+
+	return &TestBase{
+			t:              t,
+			testActor:      pid,
+			msgQueue:       msgQueue,
+			defaultTimeout: DefaultTimeout}, nil
 }
 
 func NewTestProbe(t *testing.T) TestProbe {
-	return newTestProbe(t,
-		func(msgQueue chan RealMessage) *actor.PID {
-			return actor.Spawn(NewTestActorProps(msgQueue))
+	tp, _ := newTestProbe(t,
+		func(msgQueue chan RealMessage) (*actor.PID, error) {
+			return actor.Spawn(NewTestActorProps(msgQueue)), nil
 		})
+	return tp
 }
 
-func NewTestProbeNamed(t *testing.T, name string) TestProbe {
+func NewTestProbeNamed(t *testing.T, name string) (TestProbe, error) {
 	return newTestProbe(t,
-		func(msgQueue chan RealMessage) *actor.PID {
+		func(msgQueue chan RealMessage) (*actor.PID, error) {
 			return actor.SpawnNamed(NewTestActorProps(msgQueue), name)
 		})
 }

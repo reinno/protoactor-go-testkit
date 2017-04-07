@@ -15,7 +15,7 @@ const (
 	hey   = "hey"
 )
 
-func helloActorPropsWithSleep(d time.Duration) actor.Props {
+func helloActorPropsWithSleep(d time.Duration) *actor.Props {
 	return actor.FromFunc(func(context actor.Context) {
 		switch context.Message() {
 		case hello:
@@ -28,7 +28,7 @@ func helloActorPropsWithSleep(d time.Duration) actor.Props {
 	})
 }
 
-func helloActorProps() actor.Props {
+func helloActorProps() *actor.Props {
 	return helloActorPropsWithSleep(0)
 }
 
