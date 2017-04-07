@@ -1,0 +1,6 @@
+language: go
+before_install:
+  - go get ./...
+
+script:
+- go test -v ./...
