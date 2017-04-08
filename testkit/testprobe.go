@@ -9,15 +9,40 @@ import (
 
 type (
 	TestProbe interface {
+		// Same as `expectMsg(testkit.DefaultTimeout, obj)`.
 		ExpectMsg(obj interface{}) interface{}
+
+		// Receive one message from the test actor and assert that it equals the
+		// given object. Wait time is bounded by the given duration, with an
+		// AssertionFailure being thrown in case of timeout.
 		ExpectMsgInTime(max time.Duration, obj interface{}) interface{}
+
+		// Same as `expectNoMsgInTime(testkit.DefaultTimeout)`.
 		ExpectNoMsg()
+
+		// Assert that no message is received for the specified time.
 		ExpectNoMsgInTime(max time.Duration)
+
+		// Same as `expectMsgType(testkit.DefaultTimeout, obj)`.
 		ExpectMsgType(t reflect.Type) interface{}
+
+		// Receive one message from the test actor and assert that it conforms to the
+		// given type (after erasure). Wait time is bounded by the given duration,
+		// with an AssertionFailure being thrown in case of timeout.
 		ExpectMsgTypeInTime(max time.Duration, t reflect.Type) interface{}
 
+		// Request sends a message to the given PID and also provides probe's test actor PID as sender.
 		Request(actor *actor.PID, msg interface{})
+
+		// Get sender of last received message.
+		Sender() *actor.PID
+
+		// Install an AutoPilot to drive the testActor:
+		//   the AutoPilot will be run for each received message and can be used to send or forward messages, etc.
+		// Each invocation must return the AutoPilot for the next round.
 		SetAutoPilot(ap AutoPilot)
+
+		// PID of the test actor.
 		Pid() *actor.PID
 	}
 )
@@ -31,10 +56,10 @@ func newTestProbe(t *testing.T, testActorFunc func(chan RealMessage) (*actor.PID
 	}
 
 	return &TestBase{
-			t:              t,
-			testActor:      pid,
-			msgQueue:       msgQueue,
-			defaultTimeout: DefaultTimeout}, nil
+		t:              t,
+		testActor:      pid,
+		msgQueue:       msgQueue,
+		defaultTimeout: DefaultTimeout}, nil
 }
 
 func NewTestProbe(t *testing.T) TestProbe {

@@ -19,10 +19,17 @@ func (ta *TestActor) Receive(context actor.Context) {
 	switch msg := context.Message().(type) {
 	case *actor.Started:
 
+	case *actor.Stopping:
+		for m := range ta.msgQueue {
+			deadLetter, _ := actor.ProcessRegistry.Get(nil)
+			deadLetter.SendUserMessage(context.Sender(), m.msg, m.sender)
+		}
+
 	case SetAutoPilot:
 		ta.autopilot = msg.ap
 
 	default:
+		//fmt.Printf("recieved msg: %v", msg)
 		switch ap := ta.autopilot.Run(context.Sender(), msg); ap {
 		case KeepRunning:
 		default:

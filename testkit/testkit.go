@@ -99,6 +99,10 @@ func (tb *TestBase) Request(actor *actor.PID, msg interface{}) {
 	actor.Request(msg, tb.testActor)
 }
 
+func (tb *TestBase) Sender() *actor.PID {
+	return tb.lastSender
+}
+
 func (tb *TestBase) SetAutoPilot(ap AutoPilot) {
 	tb.testActor.Tell(SetAutoPilot{ap})
 }

@@ -2,6 +2,8 @@ package testkit
 
 import (
 	"github.com/AsynkronIT/protoactor-go/actor"
+	"github.com/AsynkronIT/protoactor-go/eventstream"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
@@ -35,7 +37,8 @@ func helloActorProps() *actor.Props {
 func TestTestProbeReceiveMsg(t *testing.T) {
 	tp := NewTestProbe(t)
 	tp.Request(actor.Spawn(helloActorProps()), hello)
-	tp.ExpectMsg(world)
+	msg := tp.ExpectMsg(world)
+	assert.Equal(t, msg, world)
 	tp.ExpectNoMsg()
 }
 
@@ -75,5 +78,48 @@ func TestTestProbeAutoPilot(t *testing.T) {
 
 	tp1.SetAutoPilot(ap)
 	tp2.Request(tp1.Pid(), hey)
+	tp1.ExpectMsg(hey)
 	tp2.ExpectMsgType(reflect.TypeOf(&World{"wowo"}))
+}
+
+func TestTestProbeSender(t *testing.T) {
+	tp := NewTestProbe(t)
+
+	sender := actor.Spawn(actor.FromFunc(func(context actor.Context) {
+		switch context.Message().(type) {
+		case *actor.Started:
+			context.Request(tp.Pid(), hey)
+		}
+	}))
+
+	tp.ExpectMsg(hey)
+	assert.Equal(t, tp.Sender(), sender)
+}
+
+func TestTestProbeUnExpectMsg(t *testing.T) {
+	tp := NewTestProbe(t)
+
+	sender := actor.Spawn(actor.FromFunc(func(context actor.Context) {
+		switch context.Message().(type) {
+		case *actor.Started:
+			context.Request(tp.Pid(), hey)
+			context.Request(tp.Pid(), hey)
+		}
+	}))
+
+	deadLetterReceived := 0
+	sub := eventstream.Subscribe(func(msg interface{}) {
+		if deadLetter, ok := msg.(*actor.DeadLetterEvent); ok {
+			assert.Equal(t, deadLetter.Sender, sender)
+			assert.Equal(t, deadLetter.Message, hey)
+			deadLetterReceived += 1
+		}
+	})
+	defer eventstream.Unsubscribe(sub)
+
+	//tp.ExpectMsg(hey)
+	time.Sleep(time.Millisecond)
+	tp.Pid().Stop()
+	time.Sleep(10 * time.Millisecond)
+	assert.Equal(t, 2, deadLetterReceived)
 }
