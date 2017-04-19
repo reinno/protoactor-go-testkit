@@ -15,23 +15,23 @@ const (
 )
 
 type (
-	TestBase struct {
+	testBase struct {
 		t *testing.T
 
 		testActor      *actor.PID
 		lastMessage    interface{}
 		lastSender     *actor.PID
-		msgQueue       chan RealMessage
+		msgQueue       chan realMessage
 		defaultTimeout time.Duration
 	}
 
-	RealMessage struct {
+	realMessage struct {
 		msg    interface{}
 		sender *actor.PID
 	}
 )
 
-func (tb *TestBase) receiveOne(max time.Duration) interface{} {
+func (tb *testBase) receiveOne(max time.Duration) interface{} {
 	timeout := make(chan bool, 1)
 
 	go func() {
@@ -51,35 +51,35 @@ func (tb *TestBase) receiveOne(max time.Duration) interface{} {
 	}
 }
 
-func (tb *TestBase) expectMsg(max time.Duration, obj interface{}) interface{} {
+func (tb *testBase) expectMsg(max time.Duration, obj interface{}) interface{} {
 	msg := tb.receiveOne(max)
 	assert.NotNil(tb.t, msg, fmt.Sprintf("timeout (%v) during expectMsg while waiting for %v", max, obj))
 	assert.Equal(tb.t, obj, msg, fmt.Sprintf("expected %v, found %v", obj, msg))
 	return msg
 }
 
-func (tb *TestBase) ExpectMsg(obj interface{}) interface{} {
+func (tb *testBase) ExpectMsg(obj interface{}) interface{} {
 	return tb.expectMsg(tb.defaultTimeout, obj)
 }
 
-func (tb *TestBase) ExpectMsgInTime(max time.Duration, obj interface{}) interface{} {
+func (tb *testBase) ExpectMsgInTime(max time.Duration, obj interface{}) interface{} {
 	return tb.expectMsg(max, obj)
 }
 
-func (tb *TestBase) expectNoMsg(max time.Duration) {
+func (tb *testBase) expectNoMsg(max time.Duration) {
 	msg := tb.receiveOne(max)
 	assert.Nil(tb.t, msg, fmt.Sprintf("received unexpected message %v", msg))
 }
 
-func (tb *TestBase) ExpectNoMsg() {
+func (tb *testBase) ExpectNoMsg() {
 	tb.expectNoMsg(tb.defaultTimeout)
 }
 
-func (tb *TestBase) ExpectNoMsgInTime(max time.Duration) {
+func (tb *testBase) ExpectNoMsgInTime(max time.Duration) {
 	tb.expectNoMsg(max)
 }
 
-func (tb *TestBase) expectMsgType(max time.Duration, t reflect.Type) interface{} {
+func (tb *testBase) expectMsgType(max time.Duration, t reflect.Type) interface{} {
 	msg := tb.receiveOne(max)
 	assert.NotNil(tb.t, msg, fmt.Sprintf("timeout (%v) during expectMsgType while waiting for %v", max, t))
 	msgT := reflect.TypeOf(msg)
@@ -87,26 +87,30 @@ func (tb *TestBase) expectMsgType(max time.Duration, t reflect.Type) interface{}
 	return msg
 }
 
-func (tb *TestBase) ExpectMsgType(t reflect.Type) interface{} {
+func (tb *testBase) ExpectMsgType(t reflect.Type) interface{} {
 	return tb.expectMsgType(tb.defaultTimeout, t)
 }
 
-func (tb *TestBase) ExpectMsgTypeInTime(max time.Duration, t reflect.Type) interface{} {
+func (tb *testBase) ExpectMsgTypeInTime(max time.Duration, t reflect.Type) interface{} {
 	return tb.expectMsgType(max, t)
 }
 
-func (tb *TestBase) Request(actor *actor.PID, msg interface{}) {
+func (tb *testBase) Request(actor *actor.PID, msg interface{}) {
 	actor.Request(msg, tb.testActor)
 }
 
-func (tb *TestBase) Sender() *actor.PID {
+func (tb *testBase) Sender() *actor.PID {
 	return tb.lastSender
 }
 
-func (tb *TestBase) SetAutoPilot(ap AutoPilot) {
-	tb.testActor.Tell(SetAutoPilot{ap})
+func (tb *testBase) SetAutoPilot(ap AutoPilot) {
+	tb.testActor.Tell(setAutoPilot{ap})
 }
 
-func (tb *TestBase) Pid() *actor.PID {
+func (tb *testBase) SetIgnore(ignore IgnoreFunc) {
+	tb.testActor.Tell(setIgnore{ignore})
+}
+
+func (tb *testBase) Pid() *actor.PID {
 	return tb.testActor
 }

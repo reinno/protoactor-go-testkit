@@ -123,3 +123,76 @@ func TestTestProbeUnExpectMsg(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 	assert.Equal(t, 2, deadLetterReceived)
 }
+
+func TestTestProbeIgnoreMsg(t *testing.T) {
+	tp := NewTestProbe(t)
+
+	sender := actor.Spawn(actor.FromFunc(func(context actor.Context) {
+		switch context.Message().(type) {
+		case *actor.Started:
+			context.Request(tp.Pid(), hey)
+		}
+	}))
+
+	tp.SetIgnore(func(m interface{}) bool {
+		switch m {
+		case hey:
+			return true
+		default:
+			return false
+		}
+	})
+	deadLetterReceived := 0
+	sub := eventstream.Subscribe(func(msg interface{}) {
+		if deadLetter, ok := msg.(*actor.DeadLetterEvent); ok {
+			assert.Equal(t, deadLetter.Sender, sender)
+			assert.Equal(t, deadLetter.Message, hey)
+			deadLetterReceived += 1
+		}
+	})
+	defer eventstream.Unsubscribe(sub)
+
+	//tp.ExpectMsg(hey)
+	time.Sleep(time.Millisecond)
+	tp.Pid().Stop()
+	time.Sleep(10 * time.Millisecond)
+	assert.Equal(t, 0, deadLetterReceived)
+}
+
+func TestTestProbePropsIgnoreMsg(t *testing.T) {
+	tp := NewTestProbe(t)
+
+	props := actor.FromFunc(func(context actor.Context) {
+		switch context.Message() {
+		case hello:
+			context.Request(tp.Pid(), hey)
+		}
+	})
+	sender := NewTestProbeWithProps(t, props)
+	sender.SetIgnore(func(m interface{}) bool {
+		switch m {
+		case hello:
+			return true
+		default:
+			return false
+		}
+	})
+
+	sender.Pid().Tell(hello)
+
+	deadLetterReceived := 0
+	sub := eventstream.Subscribe(func(msg interface{}) {
+		if deadLetter, ok := msg.(*actor.DeadLetterEvent); ok {
+			assert.Equal(t, deadLetter.Message, hey)
+			assert.Equal(t, deadLetter.Sender, sender.Pid())
+			deadLetterReceived += 1
+		}
+	})
+	defer eventstream.Unsubscribe(sub)
+
+	//tp.ExpectMsg(hey)
+	time.Sleep(time.Millisecond)
+	tp.Pid().Stop()
+	time.Sleep(10 * time.Millisecond)
+	assert.Equal(t, 1, deadLetterReceived)
+}

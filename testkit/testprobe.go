@@ -42,20 +42,23 @@ type (
 		// Each invocation must return the AutoPilot for the next round.
 		SetAutoPilot(ap AutoPilot)
 
+		// Ignore all messages in the test actor for which the given function returns true.
+		SetIgnore(ignore IgnoreFunc)
+
 		// PID of the test actor.
 		Pid() *actor.PID
 	}
 )
 
-func newTestProbe(t *testing.T, testActorFunc func(chan RealMessage) (*actor.PID, error)) (TestProbe, error) {
-	msgQueue := make(chan RealMessage, MaxMsgQueueNum)
+func newTestProbe(t *testing.T, testActorFunc func(chan realMessage) (*actor.PID, error)) (TestProbe, error) {
+	msgQueue := make(chan realMessage, MaxMsgQueueNum)
 
 	pid, err := testActorFunc(msgQueue)
 	if err != nil {
 		return nil, err
 	}
 
-	return &TestBase{
+	return &testBase{
 		t:              t,
 		testActor:      pid,
 		msgQueue:       msgQueue,
@@ -64,15 +67,23 @@ func newTestProbe(t *testing.T, testActorFunc func(chan RealMessage) (*actor.PID
 
 func NewTestProbe(t *testing.T) TestProbe {
 	tp, _ := newTestProbe(t,
-		func(msgQueue chan RealMessage) (*actor.PID, error) {
-			return actor.Spawn(NewTestActorProps(msgQueue)), nil
+		func(msgQueue chan realMessage) (*actor.PID, error) {
+			return actor.Spawn(newTestActorProps(msgQueue)), nil
+		})
+	return tp
+}
+
+func NewTestProbeWithProps(t *testing.T, props *actor.Props) TestProbe {
+	tp, _ := newTestProbe(t,
+		func(msgQueue chan realMessage) (*actor.PID, error) {
+			return actor.Spawn(newTestActorPropsWithProps(msgQueue, props)), nil
 		})
 	return tp
 }
 
 func NewTestProbeNamed(t *testing.T, name string) (TestProbe, error) {
 	return newTestProbe(t,
-		func(msgQueue chan RealMessage) (*actor.PID, error) {
-			return actor.SpawnNamed(NewTestActorProps(msgQueue), name)
+		func(msgQueue chan realMessage) (*actor.PID, error) {
+			return actor.SpawnNamed(newTestActorProps(msgQueue), name)
 		})
 }

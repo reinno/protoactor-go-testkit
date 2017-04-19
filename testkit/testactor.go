@@ -5,17 +5,31 @@ import (
 )
 
 type (
-	TestActor struct {
-		msgQueue  chan RealMessage
-		autopilot AutoPilot
+	testActor struct{}
+
+	setAutoPilot struct {
+		ap AutoPilot
 	}
 
-	SetAutoPilot struct {
-		ap AutoPilot
+	IgnoreFunc func(interface{}) bool
+	setIgnore  struct {
+		fn IgnoreFunc
+	}
+
+	testActorPlugin struct {
+		msgQueue  chan realMessage
+		autopilot AutoPilot
+		ignore    IgnoreFunc
 	}
 )
 
-func (ta *TestActor) Receive(context actor.Context) {
+func IgnoreNone(interface{}) bool { return false }
+
+func (ta *testActor) Receive(context actor.Context) {}
+
+func (ta *testActorPlugin) Receive(context actor.Context, next actor.ActorFunc) {
+	next(context)
+
 	switch msg := context.Message().(type) {
 	case *actor.Started:
 
@@ -25,21 +39,33 @@ func (ta *TestActor) Receive(context actor.Context) {
 			deadLetter.SendUserMessage(context.Sender(), m.msg, m.sender)
 		}
 
-	case SetAutoPilot:
+	case setAutoPilot:
 		ta.autopilot = msg.ap
 
-	default:
-		//fmt.Printf("recieved msg: %v", msg)
-		switch ap := ta.autopilot.Run(context.Sender(), msg); ap {
-		case KeepRunning:
-		default:
-			ta.autopilot = ap
-		}
+	case setIgnore:
+		ta.ignore = msg.fn
 
-		ta.msgQueue <- RealMessage{msg, context.Sender()}
+	default:
+		if !ta.ignore(msg) {
+			switch ap := ta.autopilot.Run(context.Sender(), msg); ap {
+			case KeepRunning:
+			default:
+				ta.autopilot = ap
+			}
+
+			ta.msgQueue <- realMessage{msg, context.Sender()}
+		}
 	}
 }
 
-func NewTestActorProps(msgQueue chan RealMessage) *actor.Props {
-	return actor.FromInstance(&TestActor{msgQueue, NoAutoPilot})
+func newTestActorProps(msgQueue chan realMessage) *actor.Props {
+	return actor.FromInstance(&testActor{}).
+		WithMiddleware(use(&testActorPlugin{msgQueue, NoAutoPilot, IgnoreNone}))
+}
+
+func newTestActorPropsWithProps(msgQueue chan realMessage, props *actor.Props) *actor.Props {
+	return props.WithMiddleware(use(
+		&testActorPlugin{msgQueue,
+			NoAutoPilot,
+			IgnoreNone}))
 }
