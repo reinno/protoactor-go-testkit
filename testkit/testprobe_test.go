@@ -57,6 +57,14 @@ func TestTestProbeReceiveMsgInTime0(t *testing.T) {
 	tp.ExpectMsgInTime(0*time.Second, world)
 }
 
+func TestTestProbeReceiveAny(t *testing.T) {
+	tp := NewTestProbe(t)
+	tp.Request(actor.Spawn(helloActorProps()), hello)
+	msg := tp.ExpectAny()
+	assert.Equal(t, msg, world)
+	tp.ExpectNoMsg()
+}
+
 func TestTestProbeReceiveMsgType(t *testing.T) {
 	tp := NewTestProbe(t)
 	tp.Request(actor.Spawn(helloActorProps()), hey)
