@@ -200,7 +200,22 @@ func TestTestProbePropsIgnoreMsg(t *testing.T) {
 
 	//tp.ExpectMsg(hey)
 	time.Sleep(time.Millisecond)
-	tp.Pid().Stop()
+	tp.StopFuture().Wait()
 	time.Sleep(10 * time.Millisecond)
 	assert.Equal(t, 1, deadLetterReceived)
+}
+
+func TestTestStopProbe(t *testing.T) {
+	tp1, err := NewTestProbeNamed(t, "a")
+	assert.Nil(t, err)
+	assert.NotNil(t, tp1)
+
+	tp2, err := NewTestProbeNamed(t, "a")
+	assert.NotNil(t, err)
+	assert.Nil(t, tp2)
+
+	tp1.StopFuture().Wait()
+	tp3, err := NewTestProbeNamed(t, "a")
+	assert.Nil(t, err)
+	assert.NotNil(t, tp3)
 }

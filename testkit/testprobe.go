@@ -54,6 +54,12 @@ type (
 
 		// PID of the test actor.
 		Pid() *actor.PID
+
+		// Stop Test Probe
+		Stop()
+
+		// Stop Test Probe with end callback
+		StopFuture() *actor.Future
 	}
 )
 
@@ -92,5 +98,12 @@ func NewTestProbeNamed(t *testing.T, name string) (TestProbe, error) {
 	return newTestProbe(t,
 		func(msgQueue chan realMessage) (*actor.PID, error) {
 			return actor.SpawnNamed(newTestActorProps(msgQueue), name)
+		})
+}
+
+func NewTestProbeNamedWithProps(t *testing.T, name string, props *actor.Props) (TestProbe, error) {
+	return newTestProbe(t,
+		func(msgQueue chan realMessage) (*actor.PID, error) {
+			return actor.SpawnNamed(newTestActorPropsWithProps(msgQueue, props), name)
 		})
 }

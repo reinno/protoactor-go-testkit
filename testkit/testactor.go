@@ -34,9 +34,15 @@ func (ta *testActorPlugin) Receive(context actor.Context, next actor.ActorFunc) 
 	case *actor.Started:
 
 	case *actor.Stopping:
-		for m := range ta.msgQueue {
-			deadLetter, _ := actor.ProcessRegistry.Get(nil)
-			deadLetter.SendUserMessage(context.Sender(), m.msg, m.sender)
+	L:
+		for {
+			select {
+			case m :=<- ta.msgQueue:
+				deadLetter, _ := actor.ProcessRegistry.Get(nil)
+				deadLetter.SendUserMessage(context.Sender(), m.msg, m.sender)
+			default:
+				break L
+			}
 		}
 
 	case setAutoPilot:

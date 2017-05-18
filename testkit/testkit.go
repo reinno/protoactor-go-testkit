@@ -128,3 +128,11 @@ func (tb *testBase) SetIgnore(ignore IgnoreFunc) {
 func (tb *testBase) Pid() *actor.PID {
 	return tb.testActor
 }
+
+func (tb *testBase) Stop() {
+	tb.testActor.Stop()
+}
+
+func (tb *testBase) StopFuture() *actor.Future {
+	return tb.testActor.StopFuture()
+}
