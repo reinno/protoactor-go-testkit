@@ -1,12 +1,13 @@
 package testkit
 
 import (
-	"github.com/AsynkronIT/protoactor-go/actor"
-	"github.com/AsynkronIT/protoactor-go/eventstream"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/AsynkronIT/protoactor-go/actor"
+	"github.com/AsynkronIT/protoactor-go/eventstream"
+	"github.com/stretchr/testify/assert"
 )
 
 type World struct{ say string }

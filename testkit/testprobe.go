@@ -1,10 +1,11 @@
 package testkit
 
 import (
-	"github.com/AsynkronIT/protoactor-go/actor"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/AsynkronIT/protoactor-go/actor"
 )
 
 type (

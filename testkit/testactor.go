@@ -37,7 +37,7 @@ func (ta *testActorPlugin) Receive(context actor.Context, next actor.ActorFunc) 
 	L:
 		for {
 			select {
-			case m :=<- ta.msgQueue:
+			case m := <-ta.msgQueue:
 				deadLetter, _ := actor.ProcessRegistry.Get(nil)
 				deadLetter.SendUserMessage(context.Sender(), m.msg, m.sender)
 			default:

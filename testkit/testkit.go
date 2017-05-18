@@ -2,11 +2,12 @@ package testkit
 
 import (
 	"fmt"
-	"github.com/AsynkronIT/protoactor-go/actor"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/AsynkronIT/protoactor-go/actor"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
