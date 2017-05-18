@@ -24,11 +24,11 @@ type (
 		ExpectNoMsgInTime(max time.Duration)
 
 		// Same as `expectAnyInTime(testkit.DefaultTimeout)`.
-		ExpectAny() interface{}
+		ExpectAnyMsg() interface{}
 
 		// Receive one message from the test actor. Wait time is bounded by the given duration, with an
 		// AssertionFailure being thrown in case of timeout.
-		ExpectAnyInTime(max time.Duration) interface{}
+		ExpectAnyMsgInTime(max time.Duration) interface{}
 
 		// Same as `expectMsgType(testkit.DefaultTimeout, obj)`.
 		ExpectMsgType(t reflect.Type) interface{}

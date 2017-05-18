@@ -75,18 +75,18 @@ func (tb *testBase) ExpectNoMsg() {
 	tb.expectNoMsg(tb.defaultTimeout)
 }
 
-func (tb *testBase) expectAny(max time.Duration) interface{} {
+func (tb *testBase) expectAnyMsg(max time.Duration) interface{} {
 	msg := tb.receiveOne(max)
-	assert.NotNil(tb.t, msg, fmt.Sprintf("timeout (%v) during expectAny while waiting", max))
+	assert.NotNil(tb.t, msg, fmt.Sprintf("timeout (%v) during expectAnyMsg while waiting", max))
 	return msg
 }
 
-func (tb *testBase) ExpectAny() interface{} {
-	return tb.expectAny(tb.defaultTimeout)
+func (tb *testBase) ExpectAnyMsg() interface{} {
+	return tb.expectAnyMsg(tb.defaultTimeout)
 }
 
-func (tb *testBase) ExpectAnyInTime(max time.Duration) interface{} {
-	return tb.expectAny(max)
+func (tb *testBase) ExpectAnyMsgInTime(max time.Duration) interface{} {
+	return tb.expectAnyMsg(max)
 }
 
 func (tb *testBase) ExpectNoMsgInTime(max time.Duration) {
