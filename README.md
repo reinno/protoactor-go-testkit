@@ -16,7 +16,7 @@ func helloActorProps() *actor.Props {
 }
 
 func TestTestProbeReceiveMsg(t *testing.T) {
-    helloActor := actor.Spawn(helloActorProps())
+	helloActor := actor.Spawn(helloActorProps())
 	tp := NewTestProbe(t)
 
 	tp.Request(helloActor, "hello")
