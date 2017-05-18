@@ -41,6 +41,7 @@ func TestTestProbeReceiveMsg(t *testing.T) {
 	msg := tp.ExpectMsg(world)
 	assert.Equal(t, msg, world)
 	tp.ExpectNoMsg()
+	tp.StopGraceful()
 }
 
 func TestTestProbeReceiveMsgInTime(t *testing.T) {
@@ -49,6 +50,7 @@ func TestTestProbeReceiveMsgInTime(t *testing.T) {
 		actor.Spawn(helloActorPropsWithSleep(5*time.Second)),
 		hello)
 	tp.ExpectMsgInTime(6*time.Second, world)
+	tp.StopGraceful()
 }
 
 func TestTestProbeReceiveMsgInTime0(t *testing.T) {
@@ -56,6 +58,7 @@ func TestTestProbeReceiveMsgInTime0(t *testing.T) {
 	tp.Request(actor.Spawn(helloActorProps()), hello)
 	time.Sleep(1 * time.Millisecond)
 	tp.ExpectMsgInTime(0*time.Second, world)
+	tp.StopGraceful()
 }
 
 func TestTestProbeReceiveAny(t *testing.T) {
@@ -64,12 +67,14 @@ func TestTestProbeReceiveAny(t *testing.T) {
 	msg := tp.ExpectAnyMsg()
 	assert.Equal(t, msg, world)
 	tp.ExpectNoMsg()
+	tp.StopGraceful()
 }
 
 func TestTestProbeReceiveMsgType(t *testing.T) {
 	tp := NewTestProbe(t)
 	tp.Request(actor.Spawn(helloActorProps()), hey)
 	tp.ExpectMsgType(reflect.TypeOf(&World{"wowo"}))
+	tp.StopGraceful()
 }
 
 func TestTestProbeAutoPilot(t *testing.T) {
@@ -89,6 +94,8 @@ func TestTestProbeAutoPilot(t *testing.T) {
 	tp2.Request(tp1.Pid(), hey)
 	tp1.ExpectMsg(hey)
 	tp2.ExpectMsgType(reflect.TypeOf(&World{"wowo"}))
+	tp1.StopGraceful()
+	tp2.StopGraceful()
 }
 
 func TestTestProbeSender(t *testing.T) {
@@ -103,6 +110,8 @@ func TestTestProbeSender(t *testing.T) {
 
 	tp.ExpectMsg(hey)
 	assert.Equal(t, tp.Sender(), sender)
+
+	tp.StopGraceful()
 }
 
 func TestTestProbeUnExpectMsg(t *testing.T) {
@@ -128,7 +137,7 @@ func TestTestProbeUnExpectMsg(t *testing.T) {
 
 	//tp.ExpectMsg(hey)
 	time.Sleep(time.Millisecond)
-	tp.Pid().Stop()
+	tp.StopGraceful()
 	time.Sleep(10 * time.Millisecond)
 	assert.Equal(t, 2, deadLetterReceived)
 }
@@ -163,7 +172,7 @@ func TestTestProbeIgnoreMsg(t *testing.T) {
 
 	//tp.ExpectMsg(hey)
 	time.Sleep(time.Millisecond)
-	tp.Pid().Stop()
+	tp.StopGraceful()
 	time.Sleep(10 * time.Millisecond)
 	assert.Equal(t, 0, deadLetterReceived)
 }
@@ -201,12 +210,12 @@ func TestTestProbePropsIgnoreMsg(t *testing.T) {
 
 	//tp.ExpectMsg(hey)
 	time.Sleep(time.Millisecond)
-	tp.StopFuture().Wait()
+	tp.StopGraceful()
 	time.Sleep(10 * time.Millisecond)
 	assert.Equal(t, 1, deadLetterReceived)
 }
 
-func TestTestStopProbe(t *testing.T) {
+func TestTestProbeStop(t *testing.T) {
 	tp1, err := NewTestProbeNamed(t, "a")
 	assert.Nil(t, err)
 	assert.NotNil(t, tp1)
@@ -216,7 +225,9 @@ func TestTestStopProbe(t *testing.T) {
 	assert.Nil(t, tp2)
 
 	tp1.StopFuture().Wait()
+	tp1.StopGraceful()
 	tp3, err := NewTestProbeNamed(t, "a")
 	assert.Nil(t, err)
 	assert.NotNil(t, tp3)
+	tp3.StopGraceful()
 }

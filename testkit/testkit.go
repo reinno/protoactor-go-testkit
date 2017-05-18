@@ -137,3 +137,7 @@ func (tb *testBase) Stop() {
 func (tb *testBase) StopFuture() *actor.Future {
 	return tb.testActor.StopFuture()
 }
+
+func (tb *testBase) StopGraceful() {
+	tb.testActor.StopFuture().Wait()
+}

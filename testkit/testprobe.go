@@ -61,6 +61,10 @@ type (
 
 		// Stop Test Probe with end callback
 		StopFuture() *actor.Future
+
+		// Stop Test Probe and wait it end
+		// Same as `StopFuture().Wait()`.
+		StopGraceful()
 	}
 )
 
