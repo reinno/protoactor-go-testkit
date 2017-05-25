@@ -6,6 +6,15 @@ Provide a AKKA TestKit like for [Protoactor](https://github.com/AsynkronIT/proto
 
 # Example
 ``` go
+package testkit
+
+import (
+	"testing"
+
+	"github.com/AsynkronIT/protoactor-go/actor"
+	"github.com/stretchr/testify/assert"
+)
+
 func helloActorProps() *actor.Props {
 	return actor.FromFunc(func(context actor.Context) {
 		switch context.Message() {
