@@ -110,6 +110,21 @@ func (tb *testBase) ExpectMsgTypeInTime(max time.Duration, t reflect.Type) inter
 	return tb.expectMsgType(max, t)
 }
 
+
+func (tb *testBase) Within(min time.Duration, max time.Duration, f func() interface{}) interface{} {
+	start := time.Now()
+
+	ret := f()
+
+	diff := time.Since(start)
+	assert.True(tb.t, diff < min,
+		fmt.Sprintf("block took %v, should at least have been %v", diff, min))
+	assert.True(tb.t, diff > max,
+		fmt.Sprintf("block took %v, exceeding %v", diff, min))
+
+	return ret
+}
+
 func (tb *testBase) Request(actor *actor.PID, msg interface{}) {
 	actor.Request(msg, tb.testActor)
 }

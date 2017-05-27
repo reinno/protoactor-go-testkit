@@ -39,6 +39,8 @@ type (
 		// with an AssertionFailure being thrown in case of timeout.
 		ExpectMsgTypeInTime(max time.Duration, t reflect.Type) interface{}
 
+		Within(min time.Duration, max time.Duration, f func() interface{}) interface{}
+
 		// Request sends a message to the given PID and also provides probe's test actor PID as sender.
 		Request(actor *actor.PID, msg interface{})
 
