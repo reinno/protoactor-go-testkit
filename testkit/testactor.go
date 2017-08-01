@@ -39,7 +39,7 @@ func (ta *testActorPlugin) Receive(context actor.Context, next actor.ActorFunc) 
 			select {
 			case m := <-ta.msgQueue:
 				deadLetter, _ := actor.ProcessRegistry.Get(nil)
-				deadLetter.SendUserMessage(context.Sender(), m.msg, m.sender)
+				deadLetter.SendUserMessage(context.Sender(), &actor.MessageEnvelope{nil, m.msg, m.sender})
 			default:
 				break L
 			}
